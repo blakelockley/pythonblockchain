@@ -1,0 +1,39 @@
+# create new nodes
+new miner mike
+new node alice
+new node bob
+
+# connect our nodes
+connect alice mike
+connect alice bob
+
+# mine a block
+# mike: 50
+mine mike
+
+# have mike send alice 40 amount
+# mike: 10
+# alice: 40
+send mike alice 40
+
+# mine latest transactions into a block
+# mike: 60
+mine mike
+
+# have alice send bob 25
+# alice: 15
+# bob: 25
+#send alice bob 25
+
+# mine latest transactions into a block
+# mike: 110
+#mine mike
+
+# mike: 110
+# alice: 15
+# bob: 25
+
+# display alices's blockchain
+blockchain mike
+
+show mike
