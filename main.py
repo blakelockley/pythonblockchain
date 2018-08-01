@@ -1,8 +1,6 @@
 import sys
 from interface import Interface
 
-DEBUG = True
-
 commands = {}
 
 # interface object to control our network
@@ -68,7 +66,7 @@ def showNode(args):
         print("No node labeled '{}.".format(label))
         return
 
-    print(node)
+    print("Showing:", node)
     print("Address:", node.address)
     print("Spendable Amount:", node.spendableAmount())
     print("Peers: ")
@@ -137,18 +135,14 @@ def mine(args):
 
 
 def blockchain(args):
-    if len(args) < 1:
-        print("'blockchain' command requires '<label>' argument.")
-        return
-
-    print("Showing current blockchain for {}.".format(args[0]))
-    for block in interface.blockchain(*args):
+    print("Showing current blockchain.")
+    for block in interface.blockchain():
         print(block)
 
 
 def block(args):
-    if len(args) < 2:
-        print("'block' command requires '<label>' '<blockHash>' arguments.")
+    if len(args) < 1:
+        print("'block' command requires '<blockHash>' argument.")
         return
 
     block = interface.block(*args)
@@ -160,8 +154,8 @@ def block(args):
 
 
 def tx(args):
-    if len(args) < 2:
-        print("'tx' command requires '<label>' '<txHash>' arguments.")
+    if len(args) < 1:
+        print("'tx' command requires '<txHash>' argument.")
         return
 
     tx = interface.tx(*args)
@@ -174,24 +168,36 @@ def tx(args):
     for txOut in tx.outputs:
         print("-", txOut)
 
+
+def owner(args):
+    if len(args) < 1:
+        print("'tx' command requires '<address>' argument.")
+        return
+
+    node = interface.owner(*args)
+
+    print(node.label)
+
+
 def main(args):
     print("Python Blockchain REPL v0.1")
     print("Type 'help' for list of commands.")
     print("Type 'quit' to exit.")
 
     # command, description, method
-    commands["quit"] = ("Exit from REPL.",                                 quit)
-    commands["help"] = ("List all commands.",                         printHelp)
-    commands["new"]  = ("<nodeType> <label> Create a new node.",            new)
-    commands["all"]  = ("Print all existing nodes.",                   printAll)
-    commands["show"]  = ("<label> Show details of particular node.",   showNode)
+    commands["quit"]    = ("Exit from REPL.",                           quit)
+    commands["help"]    = ("List all commands.",                        printHelp)
+    commands["new"]     = ("<nodeType> <label> Create a new node.",     new)
+    commands["all"]     = ("Print all existing nodes.",                 printAll)
+    commands["show"]    = ("<label> Show details of particular node.",  showNode)
     commands["connect"] = ("<labelA> <labelB> Connect two peers in the network.", connect)
-    commands["load"] = ("<scriptName> Load script.", load)
-    commands["send"] = ("<labelA> <labelB> <amount>", send)
-    commands["mine"] = ("<label>", mine)
-    commands["blockchain"] = ("<label>", blockchain)
-    commands["block"] = ("<label> <blockHash>", block)
-    commands["tx"] = ("<label> <txHash>", tx)
+    commands["load"]    = ("<scriptName> Load script.",                 load)
+    commands["send"]    = ("<labelA> <labelB> <amount> Pay <amount> from one node to an other.", send)
+    commands["mine"]    = ("<label> Mine current mempool.",             mine)
+    commands["blockchain"] = ("Display the current blockchain.",        blockchain)
+    commands["block"]   = ("<blockHash> Display the block of with given hash for a node. ", block)
+    commands["tx"]      = ("<txHash> Display the transaction of a given hash for a node.", tx)
+    commands["owner"]   = ("<address> Display node owning given address.", owner)
 
     while True:
         lineIn = input("> ")
@@ -209,61 +215,9 @@ def main(args):
         try:
             func(args)
         except Exception as e:
-            if DEBUG:   raise e
-            else:       print(e)
+            print(e)
+            # raise e
 
 
 if __name__ == "__main__":
     main(sys.argv)
-
-
-# from hashlib import sha256
-#
-# from tx import Tx, TxOut, TxIn
-# from ecc import generateSignature, verifySignature
-# from base58check import encode, decode
-# from utility import paddedBytes
-# from node import Node, connect
-# from miner import Miner
-#
-# # create basic nodes
-# # able to create transactions and pass around messages (blocks and txs)
-# aliceNode = Node("Alice")
-# bobNode = Node("Bob")
-#
-# # create a miner node that will mine tx it hears into a block
-# mikeNode = Miner("Mike")
-#
-# # connect all nodes to bob
-# # our network now looks like this:
-# # Alice <--> Bob <--> Mike <--> Nick
-# connect(aliceNode, bobNode)
-# connect(bobNode, mikeNode)
-#
-# # reward mike for mining a block to introduce some spendable money
-# mikeNode.mineCurrentMempool()
-#
-# # mike now has 50 coins
-# print(mikeNode.spendableAmount())
-#
-# # alice will have 40 and mike will have 10
-# mikeNode.transfer(40, aliceNode.address)
-#
-# print(mikeNode.spendableAmount())
-#
-# mikeNode.mineCurrentMempool()
-#
-# print(aliceNode.spendableAmount())
-# print(mikeNode.spendableAmount())
-#
-#
-# # tx1 = genesis.transactions[0]
-# #
-#
-# # aliceNode.receiveTx(xfer)
-# #
-# # mikeNode.mine(UnminedBlock([xfer], genesis.blockHeader.blockHash()))
-# #
-# # print(mikeNode.spendableAmount())
-# # print(aliceNode.spendableAmount())
-# # print(nickNode.spendableAmount())
